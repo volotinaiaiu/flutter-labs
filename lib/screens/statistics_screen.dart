@@ -1,23 +1,39 @@
+import '../models/habit.dart'; 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/habit_provider.dart';
 
 class StatisticsScreen extends StatelessWidget {
   const StatisticsScreen({super.key});
 
+  double _calculateTotalProgress(List<Habit> habits) {
+    if (habits.isEmpty) return 0.0;
+    final total = habits.map((h) => h.progress).reduce((a, b) => a + b);
+    return total / habits.length;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final habitProvider = Provider.of<HabitProvider>(context);
+    final totalProgress = _calculateTotalProgress(habitProvider.habits);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Статистика'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
-      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Заголовок раздела
             const Text(
               'Общий прогресс',
               style: TextStyle(
@@ -26,35 +42,35 @@ class StatisticsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Карточка общего прогресса
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Выполнено за месяц',
+                        const Text(
+                          'Средний прогресс',
                           style: TextStyle(fontSize: 16),
                         ),
                         Text(
-                          '65%',
+                          '${(totalProgress * 100).round()}%',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: totalProgress > 0.7 ? Colors.green : Colors.blue,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     LinearProgressIndicator(
-                      value: 0.65,
+                      value: totalProgress,
                       backgroundColor: Colors.grey[300],
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        totalProgress > 0.7 ? Colors.green : Colors.blue,
+                      ),
                     ),
                   ],
                 ),
@@ -63,7 +79,6 @@ class StatisticsScreen extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // Мотивационная цитата
             const Text(
               'Мотивационная цитата',
               style: TextStyle(
@@ -107,7 +122,6 @@ class StatisticsScreen extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // Таблица активных привычек
             const Text(
               'Активные привычки',
               style: TextStyle(
@@ -116,30 +130,27 @@ class StatisticsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            DataTable(
-              columns: const [
-                DataColumn(label: Text('Привычка')),
-                DataColumn(label: Text('Прогресс')),
-                DataColumn(label: Text('Дней')),
-              ],
-              rows: const [
-                DataRow(cells: [
-                  DataCell(Text('Зарядка')),
-                  DataCell(Text('70%')),
-                  DataCell(Text('5')),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text('Чтение')),
-                  DataCell(Text('40%')),
-                  DataCell(Text('3')),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text('Прогулка')),
-                  DataCell(Text('90%')),
-                  DataCell(Text('7')),
-                ]),
-              ],
-            ),
+            habitProvider.habits.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Нет активных привычек',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Привычка')),
+                      DataColumn(label: Text('Прогресс')),
+                      DataColumn(label: Text('Дней')),
+                    ],
+                    rows: habitProvider.habits.map((habit) {
+                      return DataRow(cells: [
+                        DataCell(Text(habit.title)),
+                        DataCell(Text('${(habit.progress * 100).round()}%')),
+                        DataCell(Text('${habit.streak}')),
+                      ]);
+                    }).toList(),
+                  ),
           ],
         ),
       ),

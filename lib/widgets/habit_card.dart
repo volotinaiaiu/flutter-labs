@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import '../models/habit.dart';
 
 class HabitCard extends StatelessWidget {
-  final String title;
-  final double progress;
-  final int streak;
+  final Habit habit;
+  final VoidCallback onComplete;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const HabitCard({
     super.key,
-    required this.title,
-    required this.progress,
-    required this.streak,
+    required this.habit,
+    required this.onComplete,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
@@ -21,43 +24,50 @@ class HabitCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Заголовок и количество дней
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    habit.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Chip(
-                  label: Text('$streak дн.'),
-                  backgroundColor: Colors.green[100],
+                  label: Text('${habit.streak} дн.'),
+                  backgroundColor: habit.streak >= 7 
+                      ? Colors.green[100] 
+                      : Colors.blue[100],
                 ),
               ],
             ),
-            
+            if (habit.description.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                habit.description,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
-            
-            // Прогресс-бар
             LinearProgressIndicator(
-              value: progress,
+              value: habit.progress,
               backgroundColor: Colors.grey[300],
               valueColor: AlwaysStoppedAnimation<Color>(
-                progress > 0.7 ? Colors.green : Colors.blue,
+                habit.progress > 0.7 ? Colors.green : Colors.blue,
               ),
             ),
-            
             const SizedBox(height: 8),
-            
-            // Процент выполнения и кнопки
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${(progress * 100).round()}% выполнено',
+                  '${(habit.progress * 100).round()}% выполнено',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
@@ -65,22 +75,23 @@ class HabitCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    // Кнопка выполнения
                     IconButton(
-                      icon: const Icon(Icons.check_circle_outline),
-                      onPressed: null, // Пока без логики
-                      color: Colors.green,
+                      icon: Icon(
+                        habit.isCompletedToday 
+                            ? Icons.check_circle 
+                            : Icons.check_circle_outline,
+                        color: habit.isCompletedToday ? Colors.green : Colors.grey,
+                      ),
+                      onPressed: onComplete,
                     ),
-                    // Кнопка редактирования
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
-                      onPressed: null, // Пока без логики
+                      onPressed: onEdit,
                       color: Colors.blue,
                     ),
-                    // Кнопка удаления
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
-                      onPressed: null, // Пока без логики
+                      onPressed: onDelete,
                       color: Colors.red,
                     ),
                   ],
