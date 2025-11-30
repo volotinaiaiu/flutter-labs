@@ -1,33 +1,49 @@
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'providers/habit_provider.dart';
+import 'providers/weather_provider.dart';
+import 'services/weather_api_service.dart';
+import 'services/local_storage_service.dart';
 import 'screens/home_screen.dart';
-import 'screens/add_habit_screen.dart';
-import 'screens/statistics_screen.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => HabitProvider(),
+    return MultiProvider(
+      providers: [
+        // Провайдер для привычек
+        ChangeNotifierProvider<HabitProvider>(
+          create: (context) => HabitProvider(),
+        ),
+        
+        // Провайдеры для погоды
+        Provider<WeatherApiService>(
+          create: (_) => WeatherApiService(),
+        ),
+        Provider<LocalStorageService>(
+          create: (_) => LocalStorageService(),
+        ),
+        ChangeNotifierProvider<WeatherProvider>(
+          create: (context) => WeatherProvider(
+            apiService: context.read<WeatherApiService>(),
+            localStorageService: context.read<LocalStorageService>(),
+          )..loadLastCity(),
+        ),
+      ],
       child: MaterialApp(
-        title: 'HabitFlow',
+        title: 'Трекер привычек с погодой',
         theme: ThemeData(
           primarySwatch: Colors.blue,
-          useMaterial3: true,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: const HomeScreen(),
-        routes: {
-          '/home': (context) => const HomeScreen(),
-          '/add': (context) => const AddHabitScreen(),
-          '/stats': (context) => const StatisticsScreen(),
-        },
+        debugShowCheckedModeBanner: false,
       ),
     );
   }

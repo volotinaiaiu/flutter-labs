@@ -1,77 +1,82 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/habit.dart';
 
 class HabitProvider with ChangeNotifier {
-  final List<Habit> _habits = [
-    Habit(
-      id: '1',
-      title: 'Утренняя зарядка',
-      description: 'Ежедневная утренняя зарядка 15 минут',
-      frequency: 'daily',
-      progress: 0.7,
-      streak: 5,
-      isCompletedToday: false,
-    ),
-    Habit(
-      id: '2',
-      title: 'Чтение книги',
-      description: 'Чтение 30 минут перед сном',
-      frequency: 'daily',
-      progress: 0.4,
-      streak: 3,
-      isCompletedToday: false,
-    ),
-    Habit(
-      id: '3',
-      title: 'Прогулка на свежем воздухе',
-      description: 'Прогулка в парке 40 минут',
-      frequency: 'daily',
-      progress: 0.9,
-      streak: 7,
-      isCompletedToday: false,
-    ),
-  ];
+  List<Habit> _habits = [];
 
   List<Habit> get habits => _habits;
 
   // Добавление новой привычки
-  void addHabit(Habit newHabit) {
-    _habits.add(newHabit);
+  void addHabit(Habit habit) {
+    _habits.add(habit);
     notifyListeners();
   }
 
   // Удаление привычки
-  void removeHabit(String habitId) {
-    _habits.removeWhere((habit) => habit.id == habitId);
+  void deleteHabit(String id) {
+    _habits.removeWhere((habit) => habit.id == id);
     notifyListeners();
   }
 
-  // Отметка привычки как выполненной сегодня
-  void toggleHabitCompletion(String habitId) {
-    final index = _habits.indexWhere((habit) => habit.id == habitId);
+  // Переключение статуса выполнения привычки
+  void toggleHabitCompletion(String id) {
+    final index = _habits.indexWhere((habit) => habit.id == id);
     if (index != -1) {
       final habit = _habits[index];
-      final newProgress = habit.isCompletedToday 
-          ? habit.progress - 0.1 
-          : habit.progress + 0.1;
+      final updatedHabit = habit.isCompletedToday() 
+          ? habit.markAsIncomplete()
+          : habit.markAsCompleted();
       
-      _habits[index] = habit.copyWith(
-        isCompletedToday: !habit.isCompletedToday,
-        progress: newProgress.clamp(0.0, 1.0),
-        streak: habit.isCompletedToday 
-            ? habit.streak - 1 
-            : habit.streak + 1,
-      );
+      _habits[index] = updatedHabit;
       notifyListeners();
     }
   }
 
-  // Обновление прогресса привычки
-  void updateHabitProgress(String habitId, double newProgress) {
-    final index = _habits.indexWhere((habit) => habit.id == habitId);
+  // Получение привычки по ID
+  Habit? getHabitById(String id) {
+    try {
+      return _habits.firstWhere((habit) => habit.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Обновление привычки
+  void updateHabit(String id, String newTitle, String newCategory) {
+    final index = _habits.indexWhere((habit) => habit.id == id);
     if (index != -1) {
-      _habits[index] = _habits[index].copyWith(progress: newProgress);
+      final habit = _habits[index];
+      final updatedHabit = habit.copyWith(
+        title: newTitle,
+        category: newCategory,
+      );
+      _habits[index] = updatedHabit;
       notifyListeners();
     }
+  }
+
+  // Получение статистики
+  Map<String, dynamic> getStatistics() {
+    final totalHabits = _habits.length;
+    final completedToday = _habits.where((habit) => habit.isCompletedToday()).length;
+    final totalCompletions = _habits.fold(0, (sum, habit) => sum + habit.completedDates.length);
+    
+    return {
+      'totalHabits': totalHabits,
+      'completedToday': completedToday,
+      'totalCompletions': totalCompletions,
+    };
+  }
+
+  // Для веб-версии временно не используем базу данных
+  Future<void> loadHabits() async {
+    // В веб-версии пока храним в памяти
+    await Future.delayed(const Duration(milliseconds: 100));
+    notifyListeners();
+  }
+
+  Future<void> saveHabits() async {
+    // В веб-версии пока храним в памяти
+    await Future.delayed(const Duration(milliseconds: 100));
   }
 }
