@@ -5,8 +5,13 @@ import '../screens/weather_screen.dart';
 
 class WeatherCard extends StatelessWidget {
   final bool showFullInfo;
+  final bool showDetailsButton; // Новый параметр
 
-  const WeatherCard({Key? key, this.showFullInfo = false}) : super(key: key);
+  const WeatherCard({
+    Key? key, 
+    this.showFullInfo = false,
+    this.showDetailsButton = true, // По умолчанию показываем кнопку
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +55,18 @@ class WeatherCard extends StatelessWidget {
                 onPressed: weatherProvider.isLoading ? null : weatherProvider.refreshWeather,
                 tooltip: 'Обновить',
               ),
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => WeatherScreen()),
-                );
-              },
-              tooltip: 'Подробнее',
-            ),
+            // Показываем кнопку "Подробнее" только если showDetailsButton = true
+            if (showDetailsButton)
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const WeatherScreen()),
+                  );
+                },
+                tooltip: 'Подробнее',
+              ),
           ],
         ),
       ],

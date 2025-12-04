@@ -13,21 +13,12 @@ class WeatherScreen extends StatelessWidget {
         title: const Text('Погода и привычки'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              final weatherProvider = Provider.of<WeatherProvider>(context, listen: false);
-              weatherProvider.refreshWeather();
-            },
-          ),
-        ],
       ),
       body: Consumer<WeatherProvider>(
         builder: (context, weatherProvider, child) {
           return ListView(
             children: [
-              WeatherCard(showFullInfo: true),
+              WeatherCard(showDetailsButton: false), // Убрали кнопку "Подробнее"
               _buildWeatherHistory(weatherProvider),
             ],
           );

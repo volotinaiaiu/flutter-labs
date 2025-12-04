@@ -41,6 +41,14 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            // Явно укажем, что не хотим автоматических кнопок
+            actionsIconTheme: IconThemeData(color: Colors.white),
+            iconTheme: IconThemeData(color: Colors.white),
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          ),
         ),
         home: const HomeScreen(),
         debugShowCheckedModeBanner: false,
